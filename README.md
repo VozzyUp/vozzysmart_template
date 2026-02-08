@@ -312,22 +312,6 @@ O VozzySmart usa dois serviços do Upstash:
 
 ---
 
-## Suporte
-
-### Documentação
-
-- **[Guia de Configuração](docs/GUIA_CONFIGURACAO.md)**: Setup completo para produção
-- **[Inbox e AI Agents](docs/inbox-ai-agents.md)**: Chat e agentes de IA
-- **[Integração Mem0](docs/MEM0_INTEGRATION.md)**: Memória de conversas
-- **[Changelog](docs/changelog.md)**: Histórico de alterações
-
-### Contato
-
-- **Problemas**: Abra uma issue no GitHub
-- **Dúvidas**: Entre em contato com o mantenedor
-
----
-
 ### Estrutura do Projeto
 
 ```
