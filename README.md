@@ -1,12 +1,12 @@
-# SmartZap
+# VozzySmart
 
 > Automação de WhatsApp com IA integrada. Dispare campanhas, converse com clientes e deixe agentes de IA atenderem por você.
 
 ## Sobre
 
-**SmartZap** é uma plataforma completa de automação de WhatsApp que ajuda você a se comunicar com clientes de forma mais inteligente e produtiva.
+**VozzySmart** é uma plataforma completa de automação de WhatsApp que ajuda você a se comunicar com clientes de forma mais inteligente e produtiva.
 
-### Por que escolher SmartZap?
+### Por que escolher VozzySmart?
 
 - **Instalação em minutos**: Deploy na Vercel + wizard que configura tudo
 - **Campanhas em massa**: Dispare mensagens para milhares de contatos com templates aprovados
@@ -134,7 +134,7 @@ Acesse o sistema e faça login com o **email** e **senha** que você configurou 
 
 ### Navegação Principal
 
-O SmartZap tem estas áreas principais:
+O VozzySmart tem estas áreas principais:
 
 - **Campanhas**: Criar e gerenciar disparos em massa
 - **Contatos**: Lista de contatos e importação
@@ -205,7 +205,7 @@ Depois:
 
 ### Upstash (QStash + Redis)
 
-O SmartZap usa dois serviços do Upstash:
+O VozzySmart usa dois serviços do Upstash:
 
 **QStash** - Fila para processar campanhas em lote:
 - Vá em [upstash.com](https://upstash.com/) → QStash
@@ -298,7 +298,7 @@ O SmartZap usa dois serviços do Upstash:
 ### Como resetar minha senha?
 
 1. Acesse vercel.com e faça login
-2. Clique no seu projeto SmartZap
+2. Clique no seu projeto VozzySmart
 3. Clique em **Settings** (menu da esquerda)
 4. Clique em **Environment Variables**
 5. Ache `MASTER_PASSWORD` na lista
@@ -331,7 +331,7 @@ O SmartZap usa dois serviços do Upstash:
 ### Estrutura do Projeto
 
 ```
-smartzap/
+VozzySmart/
 ├── app/                 # Rotas Next.js (App Router)
 │   ├── (auth)/          # Páginas de auth (login, install)
 │   ├── (dashboard)/     # Páginas do dashboard
