@@ -2,22 +2,6 @@
 
 > Automação de WhatsApp com IA integrada. Dispare campanhas, converse com clientes e deixe agentes de IA atenderem por você.
 
----
-
-## Índice
-
-- [Sobre](#-sobre)
-- [O que você pode fazer](#-o-que-você-pode-fazer)
-- [Instalação Rápida](#-instalação-rápida)
-- [Primeiros Passos](#-primeiros-passos)
-- [Como Usar](#-como-usar)
-- [Configurações](#%EF%B8%8F-configurações)
-- [Problemas Comuns](#-problemas-comuns)
-- [FAQ](#faq)
-- [Suporte](#-suporte)
-
----
-
 ## Sobre
 
 **SmartZap** é uma plataforma completa de automação de WhatsApp que ajuda você a se comunicar com clientes de forma mais inteligente e produtiva.
@@ -80,27 +64,11 @@
 ## Instalação Rápida
 
 > **Tempo estimado**: 15-20 minutos
->
-> **Método recomendado**: Fork → Vercel → Wizard
-
-Este guia vai te levar do zero até ter o SmartZap funcionando.
 
 ### O que você vai fazer
 
-1. Fazer fork do repositório no GitHub
-2. Fazer deploy na Vercel
-3. Rodar o wizard de instalação
-4. Começar a usar!
-
-```mermaid
-flowchart LR
-    A[Fork no GitHub] --> B[Deploy na Vercel]
-    B --> C[Abrir /install]
-    C --> D[Wizard configura tudo]
-    D --> E[Pronto!]
-```
-
----
+1. Rodar o wizard de instalação
+2. Começar a usar!
 
 ### Pré-requisitos
 
@@ -115,92 +83,6 @@ Antes de começar, você precisa de contas nestes serviços:
 | **Meta Business** | API do WhatsApp (depois) | [business.facebook.com](https://business.facebook.com/) |
 
 > **Dica**: Crie as contas antes de começar e deixe abertas em abas diferentes.
-
----
-
-### Passo 1: Fork no GitHub
-
-1. Acesse o repositório do SmartZap
-2. Clique no botão **Fork** (canto superior direito)
-3. Escolha sua conta pessoal ou organização
-4. Aguarde o fork ser criado
-
-> **Pronto quando**: Você ver o repositório `smartzap` na sua conta do GitHub
-
----
-
-### Passo 2: Deploy na Vercel
-
-1. Acesse [vercel.com](https://vercel.com/) e faça login
-2. Clique em **Add New Project**
-3. Conecte sua conta do GitHub (se ainda não conectou)
-4. Selecione **smartzap** (seu fork)
-5. Clique em **Deploy**
-
-> **Aguarde**: O deploy leva cerca de 2-3 minutos
-
-6. Quando terminar, copie a URL do seu projeto (ex: `https://smartzap-abc123.vercel.app`)
-
-> **Pronto quando**: Você tiver uma URL funcionando
-
----
-
-### Passo 3: Rodar o Wizard de Instalação
-
-1. **Acesse o wizard**
-   - Abra: `https://SEU-PROJETO.vercel.app/install`
-
-2. **O wizard tem 5 etapas:**
-
-   **Etapa 1 - Seus dados:**
-   - Nome completo
-   - Email
-   - Senha (será usada para login)
-
-   **Etapa 2 - Vercel:**
-   - Vá em [vercel.com/account/tokens](https://vercel.com/account/tokens)
-   - Clique em **Create Token**
-   - Dê um nome (ex: "SmartZap Installer")
-   - Cole o token no wizard e selecione o projeto
-
-   **Etapa 3 - Supabase:**
-   - Vá em [supabase.com/dashboard/account/tokens](https://supabase.com/dashboard/account/tokens)
-   - Clique em **Generate new token**
-   - Nome: **smartzap**
-   - Cole o token no wizard
-   - 💡 O projeto será criado automaticamente!
-
-   **Etapa 4 - QStash:**
-   - Crie uma conta no [console.upstash.com](https://console.upstash.com)
-   - Clique em **QStash** no menu lateral
-   - Na aba **Details**, copie o **QSTASH_TOKEN**
-   - Cole no wizard
-
-   **Etapa 5 - Redis:**
-   - No [console.upstash.com/redis](https://console.upstash.com/redis), clique em **Create Database**
-   - Nome: **smartzap** • Região: **São Paulo** (ou mais próxima)
-   - Após criar, vá na aba **REST API**
-   - Copie **UPSTASH_REDIS_REST_URL** e **UPSTASH_REDIS_REST_TOKEN**
-   - Cole ambos no wizard
-
-3. **Confirme e execute**
-
-   Após preencher tudo, o wizard vai:
-   - Criar projeto Supabase automaticamente
-   - Configurar variáveis de ambiente na Vercel
-   - Aplicar migrations no banco
-   - Criar usuário administrador
-   - Fazer redeploy automático
-
-   **Tempo**: 3-5 minutos
-
-4. **Pronto!**
-
-   Você será redirecionado para fazer login com email e senha.
-
-> **Pronto quando**: Você conseguir fazer login!
-
----
 
 ## Primeiros Passos
 
@@ -446,47 +328,6 @@ O SmartZap usa dois serviços do Upstash:
 
 ---
 
-## Para Desenvolvedores
-
-> Esta seção é apenas para quem quer contribuir ou entender a arquitetura técnica.
-
-### Stack
-
-- **Frontend**: Next.js 16, React 19, Tailwind CSS v4, shadcn/ui
-- **Backend**: Next.js API Routes
-- **Banco**: Supabase (PostgreSQL + Realtime)
-- **Fila**: Upstash QStash
-- **IA**: Vercel AI SDK v6 + Mem0
-- **WhatsApp**: Meta Cloud API v24
-
-### Instalação Local
-
-```bash
-# 1. Clone o repositório
-git clone https://github.com/SEU-USUARIO/smartzap.git
-cd smartzap
-
-# 2. Instale dependências
-npm install
-
-# 3. Configure variáveis de ambiente
-cp .env.example .env.local
-# Preencha as variáveis
-
-# 4. Inicie o servidor
-npm run dev
-```
-
-### Scripts Disponíveis
-
-```bash
-npm run dev              # Desenvolvimento
-npm run build            # Build de produção
-npm run lint             # Verificar código
-npm run test             # Rodar testes
-npm run test:e2e         # Testes E2E
-```
-
 ### Estrutura do Projeto
 
 ```
@@ -502,11 +343,3 @@ smartzap/
 └── supabase/            # Migrations do banco
 ```
 
-Para mais detalhes técnicos, veja:
-- [CLAUDE.md](CLAUDE.md) - Guia para desenvolvedores/IA
-
----
-
-**[⬆ Voltar ao topo](#smartzap)**
-
-Feito com ❤️ para comunicação mais inteligente
