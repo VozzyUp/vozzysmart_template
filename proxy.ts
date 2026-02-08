@@ -17,7 +17,7 @@ export const config = {
 }
 
 // Routes that don't require user authentication
-const PUBLIC_PAGES = ['/login', '/install', '/debug-auth', '/f', '/atendimento', '/docs']
+const PUBLIC_PAGES = ['/login', '/debug-auth', '/f', '/atendimento', '/docs']
 // Rotas que NÃO precisam de autenticação
 // CUIDADO: adicionar rotas aqui expõe elas publicamente!
 const PUBLIC_API_ROUTES = [
@@ -25,7 +25,6 @@ const PUBLIC_API_ROUTES = [
     '/api/webhook',           // Meta WhatsApp webhooks (usa HMAC)
     '/api/health',            // Health checks
     '/api/system',            // Info básica do sistema
-    '/api/installer',         // Setup inicial (protegido separadamente após install)
     '/api/campaign/workflow', // Chamado internamente pelo QStash
     '/api/public',            // Rotas explicitamente públicas (lead forms, etc)
 ]
@@ -57,65 +56,7 @@ export async function proxy(request: NextRequest) {
         })
     }
 
-    // ==========================================================================
-    // BOOTSTRAP CHECK - Redirect to installer if not configured
-    // ==========================================================================
-    const hasMasterPassword = !!process.env.MASTER_PASSWORD
 
-    // ==========================================================================
-    // INSTALLER LOCKDOWN (produção)
-    // - Após a instalação, ninguém "anônimo" deveria conseguir abrir o wizard
-    // - As APIs do installer também não devem ficar abertas após concluído
-    //   (exceto com sessão ou admin key)
-    // ==========================================================================
-    // Em produção, se já existe MASTER_PASSWORD, o installer não pode ser público.
-    // Isso protege mesmo quando INSTALLER_ENABLED não estiver setado corretamente.
-    const shouldLockInstaller = process.env.NODE_ENV === 'production' && hasMasterPassword
-    const isInstallerPage = pathname === '/install' || pathname.startsWith('/install/')
-    const isInstallerApi = pathname.startsWith('/api/installer')
-
-    if (shouldLockInstaller && (isInstallerPage || isInstallerApi)) {
-        // Para páginas: exige sessão (login)
-        if (isInstallerPage) {
-            if (!sessionCookie?.value) {
-                const loginUrl = new URL('/login', request.url)
-                loginUrl.searchParams.set('reason', 'installer_locked')
-                loginUrl.searchParams.set('redirect', pathname)
-                return NextResponse.redirect(loginUrl)
-            }
-        }
-
-        // Para APIs: permite sessão OU admin key
-        if (isInstallerApi) {
-            if (sessionCookie?.value) {
-                return NextResponse.next()
-            }
-
-            const adminAuth = await verifyAdminAccess(request)
-            if (!adminAuth.valid) {
-                return unauthorizedResponse('Installer API bloqueada após instalação. Faça login ou use SMARTZAP_ADMIN_KEY.')
-            }
-            return NextResponse.next()
-        }
-    }
-
-    // If not configured and not already on install, redirect immediately
-    if (!hasMasterPassword) {
-        if (!pathname.startsWith('/install') && !pathname.startsWith('/api')) {
-            const installUrl = new URL('/install', request.url)
-            return NextResponse.redirect(installUrl)
-        }
-    }
-
-    // If configured but install not complete, go to wizard.
-    // IMPORTANT:
-    // - Não force o wizard aqui. Em dev/local, a completude da instalação pode ser detectada via DB,
-    //   enquanto INSTALLER_ENABLED é uma env que controla se o installer está disponível.
-    // - Para ser mais "à prova de falhas", sempre deixe o usuário cair em /login quando não houver
-    //   sessão, e deixe o /login decidir (via /api/auth/status) se precisa mandar para o wizard.
-    // - Se existir session cookie, deixa passar.
-    //
-    // Obs: o redirect para /login já é feito mais abaixo para páginas protegidas.
 
     // ==========================================================================
     // API Routes - Use API Key authentication

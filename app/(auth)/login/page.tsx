@@ -46,10 +46,12 @@ function LoginForm() {
             return
           }
 
-          router.push('/install')
+          setError('Sistema não configurado. Entre em contato com o suporte.')
+          return
         } else if (!data.isSetup) {
           // Instalação incompleta - redireciona para o wizard
-          router.push('/install/wizard')
+          setError('Sistema não configurado. Entre em contato com o suporte.')
+          return
         } else if (data.isAuthenticated) {
           router.push('/')
         } else if (data.company) {

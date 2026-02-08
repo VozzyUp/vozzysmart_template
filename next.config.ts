@@ -50,10 +50,7 @@ const nextConfig: NextConfig = {
     proxyClientMaxBodySize: '20mb',
   },
 
-  // Include SQL migration files in the serverless bundle
-  outputFileTracingIncludes: {
-    '/api/installer/run-stream': ['./supabase/migrations/**/*'],
-  },
+
 
   // Environment variables exposed to client
   env: {
