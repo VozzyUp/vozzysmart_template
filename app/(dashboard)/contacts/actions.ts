@@ -27,7 +27,8 @@ export const getContactsInitialData = cache(async (): Promise<ContactsInitialDat
   const supabase = await createClient()
 
   // Buscar tudo em paralelo
-  const [contactsResult, statsResult, tagsResult, customFieldsResult] = await Promise.all([
+  // Stats: usar count exato por status (evita limite de 1000 linhas do select('status'))
+  const [contactsResult, totalCount, optInCount, optOutCount, suppressedCount, tagsResult, customFieldsResult] = await Promise.all([
     // Primeira página de contatos
     supabase
       .from('contacts')
@@ -35,10 +36,10 @@ export const getContactsInitialData = cache(async (): Promise<ContactsInitialDat
       .order('created_at', { ascending: false })
       .range(0, PAGE_SIZE - 1),
 
-    // Stats agregados via query direta (conta todos os contatos por status)
-    supabase
-      .from('contacts')
-      .select('status'),
+    supabase.from('contacts').select('*', { count: 'exact', head: true }),
+    supabase.from('contacts').select('*', { count: 'exact', head: true }).eq('status', 'Opt-in'),
+    supabase.from('contacts').select('*', { count: 'exact', head: true }).eq('status', 'Opt-out'),
+    supabase.from('contacts').select('*', { count: 'exact', head: true }).eq('status', 'SUPPRESSED'),
 
     // Tags únicas
     supabase
@@ -79,27 +80,16 @@ export const getContactsInitialData = cache(async (): Promise<ContactsInitialDat
     }
   })
 
-  // Calcular stats a partir dos dados retornados (array de { status })
-  const allContactStatuses = statsResult.data || []
   const computedStats = {
-    total: allContactStatuses.length,
-    active: 0,
-    optOut: 0,
-    suppressed: 0
+    total: totalCount.count ?? 0,
+    active: optInCount.count ?? 0,
+    optOut: optOutCount.count ?? 0,
+    suppressed: suppressedCount.count ?? 0
   }
-  allContactStatuses.forEach((row: { status: string | null }) => {
-    if (row.status === 'OPT_IN' || row.status === 'Opt-in') {
-      computedStats.active++
-    } else if (row.status === 'OPT_OUT' || row.status === 'Opt-out') {
-      computedStats.optOut++
-    } else if (row.status === 'SUPPRESSED') {
-      computedStats.suppressed++
-    }
-  })
 
   return {
     contacts,
-    total: contactsResult.count || 0,
+    total: contactsResult.count ?? 0,
     stats: {
       total: computedStats.total,
       active: computedStats.active,
