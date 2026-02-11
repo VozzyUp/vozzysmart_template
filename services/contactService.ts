@@ -38,6 +38,9 @@ export interface ContactListResult {
   offset: number;
 }
 
+/** Tamanho de cada lote na importação (evita limite de body/timeout com >1000 contatos) */
+const IMPORT_CHUNK_SIZE = 1000;
+
 /**
  * Contact Service
  * All data is stored in Main Database (source of truth)
@@ -179,6 +182,7 @@ export const contactService = {
 
   /**
    * Import contacts from CSV/TXT file content
+   * Usa import() em lotes para suportar mais de 1000 contatos
    */
   importFromContent: async (
     content: string,
@@ -199,18 +203,8 @@ export const contactService = {
       tags: [] as string[],
     }));
 
-    // Import via API
-    const response = await fetch('/api/contacts/import', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contacts: contactsToImport }),
-    });
-
-    if (!response.ok) {
-      throw new Error('Falha ao importar contatos');
-    }
-
-    const { imported } = await response.json();
+    const { inserted, updated } = await contactService.import(contactsToImport);
+    const imported = inserted + updated;
 
     const result: ImportResult = {
       imported,
@@ -226,6 +220,7 @@ export const contactService = {
 
   /**
    * Import contacts from File object (browser)
+   * Usa import() em lotes para suportar mais de 1000 contatos
    */
   importFromFile: async (
     file: File,
@@ -240,20 +235,10 @@ export const contactService = {
       tags: [] as string[],
     }));
 
-    const response = await fetch('/api/contacts/import', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contacts: contactsToImport }),
-    });
-
-    if (!response.ok) {
-      throw new Error('Falha ao importar contatos');
-    }
-
-    const { imported } = await response.json();
+    const { inserted, updated } = await contactService.import(contactsToImport);
 
     return {
-      imported,
+      imported: inserted + updated,
       failed: parseResult.invalidRows.length,
       duplicates: parseResult.duplicates.length,
       report: generateImportReport(parseResult),
@@ -264,6 +249,7 @@ export const contactService = {
    * Import contacts with merge strategy
    * - New contacts: inserted
    * - Existing contacts (by phone): updated with merged tags
+   * - Envia em lotes de IMPORT_CHUNK_SIZE para evitar erro com >1000 contatos (body/timeout)
    */
   import: async (contacts: Omit<Contact, 'id' | 'lastActive'>[]): Promise<{ inserted: number; updated: number }> => {
     const validContacts = contacts
@@ -279,18 +265,27 @@ export const contactService = {
       valid: validContacts.length
     });
 
-    const response = await fetch('/api/contacts/import', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contacts: validContacts }),
-    });
+    let totalInserted = 0;
+    let totalUpdated = 0;
+    for (let i = 0; i < validContacts.length; i += IMPORT_CHUNK_SIZE) {
+      const chunk = validContacts.slice(i, i + IMPORT_CHUNK_SIZE);
+      const response = await fetch('/api/contacts/import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contacts: chunk }),
+      });
 
-    if (!response.ok) {
-      throw new Error('Falha ao importar contatos');
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error || 'Falha ao importar contatos');
+      }
+
+      const { inserted = 0, updated = 0 } = await response.json();
+      totalInserted += inserted;
+      totalUpdated += updated;
     }
 
-    const { inserted, updated } = await response.json();
-    return { inserted: inserted || 0, updated: updated || 0 };
+    return { inserted: totalInserted, updated: totalUpdated };
   },
 
   delete: async (id: string): Promise<void> => {
