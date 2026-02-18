@@ -35,3 +35,12 @@ jobs:
 
           echo '{ "version": "auto", "files": [' > update-manifest.json
           awk '{printf "\
+
+
+          - name: Commit manifest
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git add update-manifest.json
+          git commit -m "chore: generate update manifest" || echo "No changes"
+          git push
