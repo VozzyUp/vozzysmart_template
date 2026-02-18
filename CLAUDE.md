@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-VozzySmart é um SaaS single-tenant de automação de marketing via WhatsApp, construído com Next.js 16 (App Router), React 19, Supabase (PostgreSQL) e Upstash QStash. Integra Meta WhatsApp Cloud API (v24.0) para mensagens com template e Vercel AI SDK v6 para geração de conteúdo.
+SmartZap é um SaaS single-tenant de automação de marketing via WhatsApp, construído com Next.js 16 (App Router), React 19, Supabase (PostgreSQL) e Upstash QStash. Integra Meta WhatsApp Cloud API (v24.0) para mensagens com template e Vercel AI SDK v6 para geração de conteúdo.
 
 ## Development Commands
 
@@ -101,8 +101,8 @@ Single-tenant: no user accounts. Two auth mechanisms:
 
 - **Dashboard login**: `MASTER_PASSWORD` env var (bcrypt-hashed comparison)
 - **API routes**: `Authorization: Bearer <key>` or `X-API-Key: <key>` header
-  - `VOZZYSMART_API_KEY` — general API access
-  - `VOZZYSMART_ADMIN_KEY` — admin endpoints (`/api/database/*`, `/api/vercel/*`)
+  - `SMARTZAP_API_KEY` — general API access
+  - `SMARTZAP_ADMIN_KEY` — admin endpoints (`/api/database/*`, `/api/vercel/*`)
   - Public (no auth): `/api/webhook`, `/api/health`, `/api/flows`
 
 No middleware.ts — auth enforced per-route via `verifyApiKey()` from `lib/auth.ts`.
@@ -242,12 +242,13 @@ Required:
 - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`
 - `QSTASH_TOKEN`
 - `MASTER_PASSWORD` (login password)
-- `VOZZYSMART_API_KEY`, `VOZZYSMART_ADMIN_KEY`
+- `SMARTZAP_API_KEY`, `SMARTZAP_ADMIN_KEY`
 
 Optional:
 - `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_ID`, `WHATSAPP_BUSINESS_ACCOUNT_ID` (fallback if not in DB)
 - `GEMINI_API_KEY` (AI features)
 - `MEM0_API_KEY` (conversation memory)
+- `NEXT_PUBLIC_META_EMBEDDED_SIGNUP_CONFIG_ID` (Embedded Signup Configuration ID from Meta App Dashboard)
 
 Env var aliases accepted: `SUPABASE_SECRET_KEY` / `SUPABASE_SERVICE_ROLE_KEY`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` / `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY`
 

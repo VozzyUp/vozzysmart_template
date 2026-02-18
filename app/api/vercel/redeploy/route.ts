@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { fetchWithTimeout, isAbortError } from '@/lib/server-http'
+import { extractErrorMessage } from '@/lib/api-validation'
 
 export async function POST() {
   // Para fazer redeploy via API da Vercel, precisamos:
@@ -18,7 +19,7 @@ export async function POST() {
       message: 'Deploy hook não configurado. Configure VERCEL_DEPLOY_HOOK_URL nas variáveis de ambiente.',
       instructions: [
         '1. Vá em Project Settings → Git → Deploy Hooks',
-        '2. Crie um hook chamado "vozzysmart-redeploy"',
+        '2. Crie um hook chamado "smartzap-redeploy"',
         '3. Copie a URL e adicione como VERCEL_DEPLOY_HOOK_URL',
       ]
     }, { status: 400 })
@@ -44,7 +45,7 @@ export async function POST() {
   } catch (error) {
     return NextResponse.json({
       success: false,
-      message: error instanceof Error ? error.message : 'Erro desconhecido',
+      message: extractErrorMessage(error, 'Erro desconhecido'),
     }, { status: isAbortError(error) ? 504 : 502 })
   }
 }

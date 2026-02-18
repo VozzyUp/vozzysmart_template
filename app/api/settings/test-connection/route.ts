@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getWhatsAppCredentials } from '@/lib/whatsapp-credentials'
 import { getMetaAppCredentials } from '@/lib/meta-app-credentials'
 import { fetchWithTimeout, safeJson } from '@/lib/server-http'
+import { extractErrorMessage } from '@/lib/api-validation'
 
 type GraphApiError = {
   message?: string
@@ -103,7 +104,7 @@ function buildConnectionTroubleshooting(opts: {
         'A query pediu um campo que não existe nesse tipo de objeto (isso pode acontecer por mudança de versão do Graph API ou exemplo desatualizado).',
       nextSteps: [
         'Tente novamente sem o campo whatsapp_business_account e valide o vínculo Phone↔WABA via /{WABA_ID}/phone_numbers.',
-        'No VozzySmart, use o Diagnóstico Meta (settings/meta-diagnostics) para verificar acesso ao Phone e ao WABA.',
+        'No SmartZap, use o Diagnóstico Meta (settings/meta-diagnostics) para verificar acesso ao Phone e ao WABA.',
       ],
       docs: 'https://developers.facebook.com/docs/graph-api',
     }
@@ -121,7 +122,7 @@ function buildConnectionTroubleshooting(opts: {
         'Acesse https://developers.facebook.com/apps e faça login.',
         'Vá em “My Apps” e verifique se o App está “Archived”.',
         'Desarquive/reative o App e gere um novo token.',
-        'Depois, volte no VozzySmart e clique em “Testar Conexão”.',
+        'Depois, volte no SmartZap e clique em “Testar Conexão”.',
       ],
       docs: 'https://developers.facebook.com/docs/graph-api',
     }
@@ -398,7 +399,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         ok: false,
-        error: error instanceof Error ? error.message : 'Erro inesperado ao testar conexão',
+        error: extractErrorMessage(error, 'Erro inesperado ao testar conexão'),
       },
       { status: 500 }
     )
