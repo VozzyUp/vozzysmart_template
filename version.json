@@ -1,11 +1,9 @@
 {
   "version": "1.0.0",
-  "releaseDate": "2026-02-18",
   "changelog": [
-    "Versão inicial do core"
+    "Versão inicial do sistema de atualização automática"
   ],
-  "filesToUpdate": [
-    "core/engine.js",
-    "core/config.default.js"
-  ]
+  "filesToUpdate": [],
+  "requiresMigration": false,
+  "breakingChanges": []
 }
