@@ -13,7 +13,6 @@
     "Correção: Filtro de inbox mostrando apenas conversas abertas"
   ],
   "filesToUpdate": [
-    "vozsmart.config.json",
     "version.json",
     "types/vozsmart-config.ts",
     "types/version.ts",
