@@ -318,3 +318,4 @@ export function extractErrorMessage(error: unknown, fallback = 'Erro interno do 
   if (typeof error === 'string') return error
   return fallback
 }
+
