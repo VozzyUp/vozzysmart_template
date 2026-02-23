@@ -39,10 +39,8 @@ export async function GET(request: NextRequest) {
     }
 
     const tags = await response.json();
-    console.log('[UPDATE-CHECK] Tags from GitHub:', tags.map((t: any) => t.name));
     
     if (!tags || tags.length === 0) {
-      console.warn('[UPDATE-CHECK] No tags found in repository.');
       return NextResponse.json({
         available: false,
         currentVersion: CURRENT_VERSION,
@@ -51,23 +49,41 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Assume the first tag is the latest
-    // Remove 'v' prefix (case-insensitive) if present for comparison
-    const latestTagName = tags[0].name;
-    const latestVersion = latestTagName.replace(/^v/i, ''); 
-    
-    // Simple direct comparison
-    const isNewer = latestVersion !== CURRENT_VERSION;
+    // Extract versions and sort them semantically
+    const versions = tags
+      .map((t: any) => ({
+        tagName: t.name,
+        version: t.name.replace(/^v/i, '')
+      }))
+      .sort((a: any, b: any) => {
+        // Simple semantic sort (could be improved, but works for standard X.Y.Z)
+        const partsA = a.version.split('.').map(Number);
+        const partsB = b.version.split('.').map(Number);
+        for (let i = 0; i < Math.max(partsA.length, partsB.length); i++) {
+          const valA = partsA[i] || 0;
+          const valB = partsB[i] || 0;
+          if (valA !== valB) return valB - valA; // Descending
+        }
+        return 0;
+      });
 
-    console.log(`[UPDATE-CHECK] latestVersion: ${latestVersion}, CURRENT_VERSION: ${CURRENT_VERSION}, isNewer: ${isNewer}`);
+    const latest = versions[0];
+    
+    // Compare versions
+    const isNewer = latest.version !== CURRENT_VERSION;
 
     return NextResponse.json({
       available: isNewer,
       currentVersion: CURRENT_VERSION,
-      latestVersion: latestVersion,
-      tagName: latestTagName,
+      latestVersion: latest.version,
+      tagName: latest.tagName,
       configured: true,
-      upstream: `${owner}/${repo}`
+      upstream: `${owner}/${repo}`,
+      debug: {
+        allTags: tags.map((t: any) => t.name),
+        detectedLatest: latest.version,
+        match: latest.version === CURRENT_VERSION
+      }
     });
 
   } catch (error) {
