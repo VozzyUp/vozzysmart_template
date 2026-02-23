@@ -17,10 +17,14 @@ export async function POST(request: NextRequest) {
     }
 
     if (!owner || !repo) {
+      console.error('[UPDATE-APPLY] Missing repository info. owner:', owner, 'repo:', repo);
       return NextResponse.json({ 
-        error: 'Não foi possível detectar o repositório automático. Por favor, configure GITHUB_OWNER e GITHUB_REPO no Vercel ou ative as System Environment Variables.' 
+        error: 'Não foi possível detectar o repositório automático. Por favor, configure GITHUB_OWNER e GITHUB_REPO no Vercel ou ative as System Environment Variables.',
+        debug: { env_owner: process.env.GITHUB_OWNER, v_owner: process.env.VERCEL_GIT_REPO_OWNER, env_repo: process.env.GITHUB_REPO, v_repo: process.env.VERCEL_GIT_REPO_SLUG }
       }, { status: 500 });
     }
+
+    console.log(`[UPDATE-APPLY] Attempting sync for ${owner}/${repo} using branch ${upstreamBranch}`);
 
     // Call GitHub Merge Upstream API
     // POST /repos/{owner}/{repo}/merge-upstream
