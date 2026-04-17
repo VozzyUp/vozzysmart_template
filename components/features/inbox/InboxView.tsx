@@ -30,6 +30,7 @@ import type {
   ConversationMode,
   ConversationPriority,
 } from '@/types'
+import type { MediaAttachment } from './MessageInput'
 
 export interface InboxViewProps {
   // Conversations
@@ -51,7 +52,7 @@ export interface InboxViewProps {
   onLoadMoreMessages: () => void
 
   // Message sending
-  onSendMessage: (content: string) => void
+  onSendMessage: (content: string, media?: MediaAttachment) => void
   isSending: boolean
 
   // Labels

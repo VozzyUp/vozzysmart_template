@@ -107,6 +107,15 @@ export async function listMessages(
   return getMessagesByConversation(conversationId, filters)
 }
 
+export interface SendMessageOptions {
+  messageType?: 'text' | 'template' | 'image' | 'audio' | 'video' | 'document'
+  templateName?: string
+  templateParams?: Record<string, string[]>
+  mediaUrl?: string
+  caption?: string
+  filename?: string
+}
+
 /**
  * Send a message to a conversation
  * This handles both persisting the message and sending via WhatsApp
@@ -114,10 +123,19 @@ export async function listMessages(
 export async function sendMessage(
   conversationId: string,
   content: string,
-  messageType: 'text' | 'template' = 'text',
+  messageTypeOrOptions: 'text' | 'template' | SendMessageOptions = 'text',
   templateName?: string,
   templateParams?: Record<string, string[]>
 ): Promise<InboxMessage> {
+  // Suporte legado e novo formato de opções
+  let opts: SendMessageOptions
+  if (typeof messageTypeOrOptions === 'string') {
+    opts = { messageType: messageTypeOrOptions, templateName, templateParams }
+  } else {
+    opts = messageTypeOrOptions
+  }
+  const messageType = opts.messageType || 'text'
+
   // Get conversation to get phone number
   const conversation = await getConversationById(conversationId)
   if (!conversation) {
@@ -134,17 +152,24 @@ export async function sendMessage(
   let whatsappResult: { messageId?: string; error?: string }
 
   try {
-    if (messageType === 'template' && templateName) {
-      // Send template message
+    if (messageType === 'template' && opts.templateName) {
       whatsappResult = await sendWhatsAppMessage({
         to: conversation.phone,
         type: 'template',
-        templateName,
-        templateParams,
+        templateName: opts.templateName,
+        templateParams: opts.templateParams,
+        credentials,
+      })
+    } else if (messageType === 'image' || messageType === 'audio' || messageType === 'video' || messageType === 'document') {
+      whatsappResult = await sendWhatsAppMessage({
+        to: conversation.phone,
+        type: messageType,
+        mediaUrl: opts.mediaUrl,
+        caption: opts.caption,
+        filename: opts.filename,
         credentials,
       })
     } else {
-      // Send text message
       whatsappResult = await sendWhatsAppMessage({
         to: conversation.phone,
         type: 'text',
@@ -165,6 +190,8 @@ export async function sendMessage(
     content,
     message_type: messageType,
     whatsapp_message_id: whatsappResult.messageId,
+    ...(opts.mediaUrl ? { media_url: opts.mediaUrl } : {}),
+    payload: opts.filename ? { filename: opts.filename } : undefined,
   })
 
   // Update delivery status based on send result

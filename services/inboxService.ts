@@ -45,9 +45,12 @@ export interface MessageListResult {
 
 export interface SendMessageParams {
   content: string
-  message_type?: 'text' | 'template'
+  message_type?: 'text' | 'template' | 'image' | 'audio' | 'video' | 'document'
   template_name?: string
   template_params?: Record<string, string[]>
+  media_url?: string
+  caption?: string
+  filename?: string
 }
 
 export interface UpdateConversationParams {
