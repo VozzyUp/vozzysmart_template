@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+﻿import { NextRequest, NextResponse } from 'next/server'
 import { createHmac, timingSafeEqual } from 'node:crypto'
 
 export const dynamic = 'force-dynamic' // Prevent caching of verification requests
@@ -26,7 +26,7 @@ import {
   tryParseWebhookTimestampSeconds,
 } from '@/lib/whatsapp-status-events'
 
-import { shouldProcessWhatsAppStatusEvent } from '@/lib/whatsapp-webhook-dedupe'
+import { shouldProcessWhatsAppStatusEvent, shouldProcessInboundMessage } from '@/lib/whatsapp-webhook-dedupe'
 
 
 import { getWhatsAppCredentials } from '@/lib/whatsapp-credentials'
@@ -586,8 +586,9 @@ export async function POST(request: NextRequest) {
     ? allKeywordWorkflows.filter((w) => w.workflowId !== defaultWorkflowId)
     : allKeywordWorkflows
 
-  // Fila de mensagens de mídia para sync via API ao Chatwoot (processadas após o loop principal)
+  // Filas para sync ao Chatwoot (processadas em paralelo após o loop principal)
   const chatwootMediaQueue: Array<{ from: string; name: string | null; message: any }> = []
+  const chatwootCampaignSyncQueue: Array<Parameters<typeof syncCampaignDeliveryToChatwoot>[0]> = []
 
   try {
     const entries = body.entry || []
@@ -927,14 +928,15 @@ export async function POST(request: NextRequest) {
                     .eq('id', result.campaignContactId)
                     .single()
 
-                  void syncCampaignDeliveryToChatwoot({
+                  // Enfileira para execução awaited após o loop (evita race condition serverless)
+                  chatwootCampaignSyncQueue.push({
                     phone: result.phone ?? '',
                     name: contactData?.name ?? null,
                     campaignName: campaignData.name,
                     chatwootLabel: campaignData.chatwoot_label ?? null,
                     templateSnapshot: campaignData.template_snapshot ?? null,
                     templateVariables: campaignData.template_variables ?? null,
-                  }).catch(err => console.error('[Chatwoot Sync Error]', err))
+                  })
                 }
               } catch (e) {
                 console.error('[Chatwoot Sync] falha ao buscar campanha:', e)
@@ -979,6 +981,14 @@ export async function POST(request: NextRequest) {
         // =====================================================================
         const messages = change.value?.messages || []
         for (const message of messages) {
+          // Deduplicação para coexistência Cloud + On-Premises: a mesma mensagem
+          // pode chegar pelos dois webhooks simultaneamente
+          const isDuplicate = !(await shouldProcessInboundMessage({ messageId: message.id || '' }))
+          if (isDuplicate) {
+            console.log(`[Webhook/Cloud] Inbound duplicado ignorado (coexistência): ${message.id}`)
+            continue
+          }
+
           const from = message.from
           const messageType = message.type
           const text = extractInboundText(message)
@@ -995,7 +1005,14 @@ export async function POST(request: NextRequest) {
               type: messageType,
               text,
               timestamp: message.timestamp,
-              mediaUrl: message.image?.url || message.video?.url || message.audio?.url || message.document?.url || null,
+              // Cloud API envia media_id (não URL) para áudio/imagem/vídeo/documento
+              // media_id numérico é convertido para URL proxy em /api/inbox/media/[id]
+              mediaUrl:
+                message.image?.url || message.image?.id ||
+                message.video?.url || message.video?.id ||
+                message.audio?.url || message.audio?.id ||
+                message.document?.url || message.document?.id ||
+                null,
               phoneNumberId: phoneNumberId || undefined,
             })
             console.log(`📥 Inbox: conversation=${inboxResult.conversationId}, message=${inboxResult.messageId}, ai=${inboxResult.triggeredAI}`)
@@ -1667,6 +1684,13 @@ export async function POST(request: NextRequest) {
           )
         }
       }
+    }
+
+    for (const params of chatwootCampaignSyncQueue) {
+      promises.push(
+        syncCampaignDeliveryToChatwoot(params)
+          .catch(err => console.error('[Chatwoot Campaign Sync]', err))
+      )
     }
 
     if (promises.length > 0) {
