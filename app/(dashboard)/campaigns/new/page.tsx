@@ -199,6 +199,8 @@ export default function CampaignsNewRealPage() {
   const [isPrecheckLoading, setIsPrecheckLoading] = useState(false)
   const [skipIgnored, setSkipIgnored] = useState(false)
   const [precheckError, setPrecheckError] = useState<string | null>(null)
+  const [chatwootSync, setChatwootSync] = useState(false)
+  const [chatwootLabel, setChatwootLabel] = useState('')
   const [precheckTotals, setPrecheckTotals] = useState<{ valid: number; skipped: number } | null>(null)
   const [precheckResult, setPrecheckResult] = useState<CampaignPrecheckResult | null>(null)
 
@@ -816,6 +818,8 @@ export default function CampaignsNewRealPage() {
         flowId,
         flowName,
         folderId: selectedFolderId,
+        chatwootSync,
+        chatwootLabel: chatwootLabel.trim() || null,
       })
 
       router.push(`/campaigns/${campaign.id}`)
@@ -859,6 +863,8 @@ export default function CampaignsNewRealPage() {
         flowId,
         flowName,
         folderId: selectedFolderId,
+        chatwootSync,
+        chatwootLabel: chatwootLabel.trim() || null,
         isDraft: true, // <-- Salva como rascunho
       })
 
@@ -2868,6 +2874,49 @@ export default function CampaignsNewRealPage() {
                   </div>
                 </div>
               )}
+
+              {/* Integração Chatwoot */}
+              <div className="rounded-2xl border border-[var(--ds-border-default)] bg-[var(--ds-bg-surface)] p-6 shadow-[0_12px_30px_rgba(0,0,0,0.35)]">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <h2 className="text-lg font-semibold text-[var(--ds-text-primary)]">Chatwoot</h2>
+                    <p className="text-sm text-[var(--ds-text-muted)]">
+                      Espelha a mensagem no Chatwoot quando confirmada a entrega.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setChatwootSync((v) => !v)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
+                      chatwootSync ? 'bg-emerald-500' : 'bg-zinc-600'
+                    }`}
+                    aria-pressed={chatwootSync}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                        chatwootSync ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                </div>
+                {chatwootSync && (
+                  <div className="mt-4 space-y-2">
+                    <label className="text-xs uppercase tracking-widest text-[var(--ds-text-muted)]">
+                      Etiqueta do contato (opcional)
+                    </label>
+                    <input
+                      type="text"
+                      value={chatwootLabel}
+                      onChange={(e) => setChatwootLabel(e.target.value)}
+                      placeholder="ex: primeira-mensagem"
+                      className="w-full rounded-xl border border-[var(--ds-border-default)] bg-[var(--ds-bg-elevated)] px-4 py-3 text-sm text-[var(--ds-text-primary)] placeholder:text-[var(--ds-text-muted)] focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    />
+                    <p className="text-xs text-[var(--ds-text-muted)]">
+                      A etiqueta deve existir no Chatwoot antes de ser usada.
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 

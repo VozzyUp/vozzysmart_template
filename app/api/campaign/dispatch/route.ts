@@ -882,7 +882,8 @@ export async function POST(request: NextRequest) {
 
         if (error) {
           const msg = String((error as any)?.message || '')
-          const isMissingCol = msg.toLowerCase().includes('does not exist') && msg.toLowerCase().includes('last_error')
+          const code = String((error as any)?.code || '')
+          const isMissingCol = code === 'PGRST204' || (msg.toLowerCase().includes('does not exist') && msg.toLowerCase().includes('last_error'))
           if (!isMissingCol) {
             console.warn('[Dispatch] Falha ao marcar campanha como falhou (com last_error):', error)
           } else {
@@ -1044,7 +1045,8 @@ export async function POST(request: NextRequest) {
 
       if (updErr) {
         const msg = String((updErr as any)?.message || '').toLowerCase()
-        const isMissingCol = msg.includes('does not exist') && msg.includes('last_error')
+        const code = String((updErr as any)?.code || '')
+        const isMissingCol = code === 'PGRST204' || (msg.includes('does not exist') && msg.includes('last_error'))
         if (isMissingCol) {
           ;({ error: updErr } = await supabase
             .from('campaigns')

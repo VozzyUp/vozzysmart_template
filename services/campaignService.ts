@@ -34,6 +34,9 @@ interface CreateCampaignInput {
   folderId?: string | null;
   // Se true, salva como rascunho sem disparar
   isDraft?: boolean;
+  // Integração Chatwoot
+  chatwootSync?: boolean;
+  chatwootLabel?: string | null;
 }
 
 export interface CampaignListParams {

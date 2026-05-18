@@ -284,6 +284,8 @@ export const campaignDb = {
             cancelledAt: (data as any).cancelled_at ?? null,
             flowId: (data as any).flow_id ?? null,
             flowName: (data as any).flow_name ?? null,
+            chatwootSync: (data as any).chatwoot_sync ?? false,
+            chatwootLabel: (data as any).chatwoot_label ?? null,
         }
     },
 
@@ -296,6 +298,8 @@ export const campaignDb = {
         flowId?: string | null
         flowName?: string | null
         folderId?: string | null
+        chatwootSync?: boolean
+        chatwootLabel?: string | null
     }): Promise<Campaign> => {
         const id = generateId()
         const now = new Date().toISOString()
@@ -327,6 +331,8 @@ export const campaignDb = {
                 flow_id: campaign.flowId ?? null,
                 flow_name: campaign.flowName ?? null,
                 folder_id: campaign.folderId ?? null,
+                chatwoot_sync: campaign.chatwootSync ?? false,
+                chatwoot_label: campaign.chatwootLabel ?? null,
             })
             .select()
             .single()
@@ -351,6 +357,8 @@ export const campaignDb = {
             cancelledAt: undefined,
             flowId: campaign.flowId ?? null,
             flowName: campaign.flowName ?? null,
+            chatwootSync: campaign.chatwootSync ?? false,
+            chatwootLabel: campaign.chatwootLabel ?? null,
         }
     },
 
