@@ -1000,10 +1000,11 @@ export async function POST(request: NextRequest) {
             console.warn('[Webhook] Failed to persist to inbox:', inboxError)
           }
 
-          // Chatwoot: encaminhar mensagem entrante para o inbox do Chatwoot
-          void forwardToChatwoot(body).catch(err =>
-            console.error('[Chatwoot Forward] mensagem entrante:', err)
-          )
+          // Chatwoot: encaminha rawBody + assinatura original para que o Chatwoot valide a assinatura Meta
+          void forwardToChatwoot({
+            rawBody,
+            signature: request.headers.get('x-hub-signature-256'),
+          }).catch(err => console.error('[Chatwoot Forward] mensagem entrante:', err))
 
           // =================================================================
           // Workflow Builder (MVP): resume pending conversation if any
